@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Page de connexion premium</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-12">
+        <div class="card login-card">
+          <div class="card-header text-center">
+            Connexion TP IT-AKADEMY
+          </div>
+          <div class="card-body">
+            <form method="post" id="login-form">
+              <div class="form-group">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+              </div>
+              <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+              </div>
+              <div class="text-center form-group">
+                <input type="submit" class="btn btn-login" value="Se connecter">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ... (autres éléments du formulaire) ... -->
+
+  <!-- Popup de connexion réussie -->
+  <div id="success-popup" class="popup">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closePopup('success-popup')">&times;</span>
+      <h2>Connexion Réussie!</h2>
+      <p>Bienvenue, admin!</p>
+    </div>
+  </div>
+
+  <!-- Popup de connexion échouée -->
+  <div id="failure-popup" class="popup">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closePopup('failure-popup')">&times;</span>
+      <h2>Échec de la Connexion</h2>
+      <p>Utilisateur ou mot de passe incorrect!</p>
+    </div>
+  </div>
+
+</body>
+
+<script>
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initPopups();
+  });
+
+  function initPopups() {
+    closePopup('success-popup');
+    closePopup('failure-popup');
+  }
+
+  document.getElementById('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var username = document.getElementById('username').value;
+    var password = document.getElementById('password').value;
+
+    if (username === 'admin' && password === '123456') {
+      showPopup('success-popup');
+      setTimeout(function () {
+        window.location.href = 'admin.html'; // Redirection après un délai
+      }, 1000); // Délai de 1 seconde
+    } else {
+      showPopup('failure-popup');
+    }
+  });
+
+
+  function showPopup(id) {
+    var popup = document.getElementById(id);
+    popup.style.display = 'flex'; // Utilisez 'flex' ici pour correspondre à votre style CSS
+  }
+
+  function closePopup(id) {
+    var popup = document.getElementById(id);
+    popup.style.display = 'none';
+  }
+
+
+</script>
+
+</html>

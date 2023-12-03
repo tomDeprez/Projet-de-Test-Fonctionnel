@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Administration</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/admin-style.css">
+</head>
+
+<body>
+  <div class="admin-panel">
+    <nav class="admin-nav">
+      <ul>
+        <li><a href="#" id="link-dashboard">Tableau de Bord</a></li>
+        <li><a href="#" id="link-users">Gérer les Utilisateurs</a></li>
+        <li><a href="#" id="link-settings">Paramètres</a></li>
+        <li><a href="#" id="link-analytics">Analytics</a></li>
+        <li><a href="#" id="link-support">Support</a></li>
+        <li><a href="index.html">Déconnexion</a></li>
+      </ul>
+    </nav>
+    <div class="admin-content">
+      <h1>Bienvenue dans le Panneau d'Administration</h1>
+
+      <!-- Tableau de bord -->
+      <div class="dashboard">
+        <div class="row">
+          <!-- Carte d'information -->
+          <div class="col-md-4">
+            <div class="info-card">
+              <h3>Utilisateurs Actifs</h3>
+              <p>0</p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="info-card">
+              <h3>Projets en Cours</h3>
+              <p>8</p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="info-card">
+              <h3>Tickets de Support</h3>
+              <p>0</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Graphiques ou autres données -->
+          <div class="col-md-12">
+            <div class="graph-card">
+              <h3>Activité Récente</h3>
+              <!-- Intégrer un graphique ici si nécessaire -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+  var users = []; // Variable globale pour stocker les utilisateurs
+  var tickets = []; // Variable globale pour stocker les tickets
+
+  document.getElementById('link-dashboard').addEventListener('click', function (e) {
+    e.preventDefault();
+    showDashboard();
+  });
+
+  document.getElementById('link-users').addEventListener('click', function (e) {
+    e.preventDefault();
+    showUserManagement();
+  });
+
+  function showDashboard() {
+    var adminContent = document.querySelector('.admin-content');
+    adminContent.innerHTML = `<div class="admin-content">
+      <h1>Bienvenue dans le Panneau d'Administration</h1>
+
+      <!-- Tableau de bord -->
+      <div class="dashboard">
+        <div class="row">
+          <!-- Carte d'information -->
+          <div class="col-md-4">
+            <div class="info-card">
+              <h3>Utilisateurs Actifs</h3>
+              <p>`+ users.length + `</p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="info-card">
+              <h3>Projets en Cours</h3>
+              <p>8</p>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="info-card">
+              <h3>`+ tickets.length + 1 + `</h3>
+              <p>35</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Graphiques ou autres données -->
+          <div class="col-md-12">
+            <div class="graph-card">
+              <h3>Activité Récente</h3>
+              <!-- Intégrer un graphique ici si nécessaire -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`; // Votre contenu de tableau de bord ici
+  }
+
+
+  function showUserManagement() {
+    var adminContent = document.querySelector('.admin-content');
+    var usersTable = users.map(function (user, index) {
+      return `<tr>
+                <td>${index + 1}</td>
+                <td>${user.username}</td>
+                <td>${user.email}</td>
+                <td><button class="btn btn-primary">Éditer</button></td>
+              </tr>`;
+    }).join('');
+
+    adminContent.innerHTML = `
+      <h1>Gestion des Utilisateurs</h1>
+      <button class="btn btn-success" onclick="showAddUserForm()">Ajouter un Utilisateur</button>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>${usersTable}</tbody>
+      </table>`;
+  }
+
+  function showAddUserForm() {
+    var adminContent = document.querySelector('.admin-content');
+    adminContent.innerHTML = `
+    <!-- Popup de succès -->
+<div id="success-popup" class="popup">
+  <div class="popup-content">
+    <span class="close-btn" onclick="closePopup('success-popup')">&times;</span>
+    <p>Utilisateur ajouté avec succès.</p>
+  </div>
+</div>
+
+<!-- Popup d'erreur -->
+<div id="failure-popup" class="popup">
+  <div class="popup-content">
+    <span class="close-btn" onclick="closePopup('failure-popup')">&times;</span>
+    <p>Erreur : L'email est déjà utilisé.</p>
+  </div>
+</div>
+      <h1>Ajouter un Utilisateur</h1>
+      <form id="add-user-form" onsubmit="addUser(event)">
+        <div class="form-group">
+          <label for="username">Nom d'Utilisateur</label>
+          <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Mot de Passe</label>
+          <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Soumettre</button>
+        <button type="button" class="btn btn-secondary" onclick="showUserManagement()">Annuler</button>
+      </form>
+    `;
+    closePopup('success-popup');
+    closePopup('failure-popup');
+  }
+
+  function addUser(e) {
+    e.preventDefault();
+    var username = document.getElementById('username').value;
+    var email = document.getElementById('email').value;
+    var password = document.getElementById('password').value;
+    var dateTimeCreated = new Date().toLocaleString("fr-FR", { hour12: false });
+
+
+    var emailExists = users.some(function (user) {
+      return user.email === email;
+    });
+
+    if (emailExists) {
+      showPopup('failure-popup');
+    } else {
+      users.push({ username, email, password, dateTimeCreated });
+      showPopup('success-popup');
+      setTimeout(function () {
+        closePopup('success-popup');
+        showUserManagement();
+      }, 1000);
+    }
+  }
+
+  function showPopup(id) {
+    var popup = document.getElementById(id);
+    popup.style.display = 'flex';
+  }
+
+  function closePopup(id) {
+    var popup = document.getElementById(id);
+    popup.style.display = 'none';
+  }
+  document.getElementById('link-settings').addEventListener('click', function (e) {
+    e.preventDefault();
+    showSettings();
+  });
+
+  function showSettings() {
+    var adminContent = document.querySelector('.admin-content');
+    adminContent.innerHTML = `
+      <h1>Paramètres</h1>
+      <div class="settings">
+        <div class="setting-item">
+          <label>Changer le thème de couleur :</label>
+          <select id="theme-selector" onchange="changeTheme(this.value)">
+            <option value="default">Défaut</option>
+            <option value="dark">Sombre</option>
+            <option value="light">Clair</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>Changer la taille de la police :</label>
+          <select id="font-size-selector" onchange="changeFontSize(this.value)">
+            <option value="default">Défaut</option>
+            <option value="small">Petite</option>
+            <option value="medium">Moyenne</option>
+            <option value="large">Grande</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label>Style de bordure des cartes :</label>
+          <select id="border-style-selector" onchange="changeBorderStyle(this.value)">
+            <option value="default">Défaut</option>
+            <option value="rounded">Arrondi</option>
+            <option value="square">Carré</option>
+          </select>
+        </div>
+      </div>
+    `;
+  }
+
+  function changeTheme(theme) {
+    var body = document.body;
+    switch (theme) {
+      case 'dark':
+        body.style.backgroundColor = '#343a40';
+        body.style.color = '#ffffff';
+        break;
+      case 'light':
+        body.style.backgroundColor = '#f8f9fa';
+        body.style.color = '#212529';
+        break;
+      default:
+        body.style.backgroundColor = '';
+        body.style.color = '';
+    }
+  }
+
+  function changeFontSize(size) {
+    var body = document.body;
+    switch (size) {
+      case 'small':
+        body.style.fontSize = '12px';
+        break;
+      case 'medium':
+        body.style.fontSize = '16px';
+        break;
+      case 'large':
+        body.style.fontSize = '20px';
+        break;
+      default:
+        body.style.fontSize = '';
+    }
+  }
+
+  function changeBorderStyle(style) {
+    var cards = document.querySelectorAll('.card');
+    cards.forEach(function (card) {
+      switch (style) {
+        case 'rounded':
+          card.style.borderRadius = '15px';
+          break;
+        case 'square':
+          card.style.borderRadius = '0';
+          break;
+        default:
+          card.style.borderRadius = '';
+      }
+    });
+  }
+  document.getElementById('link-analytics').addEventListener('click', function (e) {
+    e.preventDefault();
+    showAnalytics();
+  });
+
+  function showAnalytics() {
+    var adminContent = document.querySelector('.admin-content');
+    var usersPerMinute = {};
+
+    users.forEach(function (user) {
+      // Extrait seulement la date et la minute, sans les secondes
+      var minute = user.dateTimeCreated.slice(0, -3);
+      if (!usersPerMinute[minute]) {
+        usersPerMinute[minute] = 0;
+      }
+      usersPerMinute[minute]++;
+    });
+
+    var labels = Object.keys(usersPerMinute);
+    var data = Object.values(usersPerMinute);
+
+    adminContent.innerHTML = `
+      <h1>Analytics</h1>
+      <canvas id="usersChart" width="400" height="200"></canvas>
+    `;
+
+    setTimeout(function () {
+      renderChart(labels, data);
+    }, 0);
+  }
+
+
+
+
+
+  function renderChart(labels, data) {
+    var ctx = document.getElementById('usersChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line', // ou 'bar', 'pie', etc.
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Nombre d\'utilisateurs ajoutés',
+          data: data,
+          backgroundColor: 'rgba(0, 123, 255, 0.5)',
+          borderColor: 'rgba(0, 123, 255, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+  }
+  document.getElementById('link-support').addEventListener('click', function (e) {
+    e.preventDefault();
+    showSupport();
+  });
+
+  function showSupport() {
+    var adminContent = document.querySelector('.admin-content');
+    var ticketsTable = tickets.map(function (ticket, index) {
+      return `<tr>
+                <td>${index + 1}</td>
+                <td>${ticket.title}</td>
+                <td>${ticket.description}</td>
+                <td>${ticket.status}</td>
+              </tr>`;
+    }).join('');
+
+    adminContent.innerHTML = `
+      <h1>Support</h1>
+      <button class="btn btn-success" onclick="showAddTicketForm()">Ajouter un Ticket</button>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Description</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${ticketsTable}</tbody>
+      </table>
+    `;
+  }
+
+  function showAddTicketForm() {
+    var adminContent = document.querySelector('.admin-content');
+    adminContent.innerHTML = `
+      <h1>Ajouter un Ticket</h1>
+      <!-- Popup de succès -->
+<div id="success-popup" class="popup">
+  <div class="popup-content">
+    <span class="close-btn" onclick="closePopup('success-popup')">&times;</span>
+    <p>Action réalisée avec succès!</p>
+  </div>
+</div>
+
+      <form id="add-ticket-form" onsubmit="addTicket(event)">
+        <div class="form-group">
+          <label for="title">Titre</label>
+          <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea class="form-control" id="description" name="description" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Soumettre</button>
+        <button type="button" class="btn btn-secondary" onclick="showSupport()">Annuler</button>
+      </form>
+    `;
+    closePopup('success-popup');
+  }
+
+  function addTicket(e) {
+    e.preventDefault();
+    var title = document.getElementById('title').value;
+    var description = document.getElementById('description').value;
+
+    tickets.push({ title, description, status: 'Ouvert' });
+    showPopup('success-popup');
+    setTimeout(function () {
+      closePopup('success-popup');
+      showSupport();
+    }, 1000);
+  }
+
+</script>
+
+</html>
