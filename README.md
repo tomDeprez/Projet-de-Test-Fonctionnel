@@ -32,3 +32,5 @@ Formez des groupes de 3 à 5 personnes pour travailler sur l'évolution de l'app
 2. Développer des cas de test pour ces nouvelles fonctionnalités.
 3. Implémenter les fonctionnalités en JavaScript.
 4. Tester les nouvelles fonctionnalités à l'aide des cas de test développés.
+5. Vérifiez que tout est fonctionnel et que nos tests de non-régression ne détectent pas de problème.
+6. Créez des tests de non-régression pour les nouveaux tests de la nouvelle fonctionnalité.
