@@ -6,7 +6,7 @@
   <title>Administration</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
     integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-  <link rel="stylesheet" href="css/admin-style.css">
+  <link rel="stylesheet" href="admin-style.css">
 </head>
 
 <body>
@@ -18,12 +18,11 @@
         <li><a href="#" id="link-settings">Paramètres</a></li>
         <li><a href="#" id="link-analytics">Analytics</a></li>
         <li><a href="#" id="link-support">Support</a></li>
-        <li><a href="index.html">Déconnexion</a></li>
+        <li><a href="indexUpdated.html">Déconnexion</a></li>
       </ul>
     </nav>
     <div class="admin-content">
       <h1>Bienvenue dans le Panneau d'Administration</h1>
-
       <!-- Tableau de bord -->
       <div class="dashboard">
         <div class="row">
@@ -61,6 +60,32 @@
         </div>
       </div>
     </div>
+    <!-- Add more the Popups -->
+    <!-- Popup de succès -->
+    <div id="success-popup" class="popup">
+      <div class="popup-content">
+        <span class="close-btn" onclick="closePopup('success-popup')">&times;</span>
+        <p id="success-messsage"></p>
+      </div>
+    </div>
+
+    <!-- Popup d'erreur -->
+    <div id="failure-popup" class="popup">
+      <div class="popup-content">
+        <span class="close-btn" onclick="closePopup('failure-popup')">&times;</span>
+        <p id="failure-messsage"></p>
+      </div>
+    </div>
+
+    <!-- Popup confirm -->
+    <div id="confirm-popup" class="popup">
+      <div class="popup-content">
+        <span class="close-btn" onclick="closePopup('confirm-popup')">&times;</span>
+        <p id="confirm-message"></p>
+        <button onclick="handleYesClick()">Yes</button>
+        <button onclick="handleNoClick()">No</button>
+      </div>
+    </div>
 
   </div>
 </body>
@@ -68,7 +93,14 @@
 <script>
 
   var users = []; // Variable globale pour stocker les utilisateurs
+  
+  var storedUsers = JSON.parse(window.localStorage.getItem('users')) || [];
+  users = storedUsers; //get users which is stored in localStorge of browser
+
   var tickets = []; // Variable globale pour stocker les tickets
+
+  var storedTickets = JSON.parse(window.localStorage.getItem('tickets')) || [];
+  tickets = storedTickets; //get tickets which is stored in localStorge of browser
 
   document.getElementById('link-dashboard').addEventListener('click', function (e) {
     e.preventDefault();
@@ -132,11 +164,11 @@
                 <td>${index + 1}</td>
                 <td>${user.username}</td>
                 <td>${user.email}</td>
-                <td><button class="btn btn-primary">Éditer</button></td>
+                <td><button class="btn btn-primary" onClick="editUser(${index})">Éditer</button> <button class="btn btn-danger" onClick="deleteUser(${index})">Supprimer</button></td>
               </tr>`;
     }).join('');
 
-    adminContent.innerHTML = `
+    adminContent.innerHTML = `	
       <h1>Gestion des Utilisateurs</h1>
       <button class="btn btn-success" onclick="showAddUserForm()">Ajouter un Utilisateur</button>
       <table class="table">
@@ -151,27 +183,14 @@
         <tbody>${usersTable}</tbody>
       </table>`;
   }
-
-  function showAddUserForm() {
+   // Modify function to verify title of form/load data...
+  function showAddUserForm(isUpdate = false) {
     var adminContent = document.querySelector('.admin-content');
+    var formTitle = isUpdate ? 'Update un Utilisateur' : 'Ajouter un Utilisateur';
     adminContent.innerHTML = `
-    <!-- Popup de succès -->
-<div id="success-popup" class="popup">
-  <div class="popup-content">
-    <span class="close-btn" onclick="closePopup('success-popup')">&times;</span>
-    <p>Utilisateur ajouté avec succès.</p>
-  </div>
-</div>
-
-<!-- Popup d'erreur -->
-<div id="failure-popup" class="popup">
-  <div class="popup-content">
-    <span class="close-btn" onclick="closePopup('failure-popup')">&times;</span>
-    <p>Erreur : L'email est déjà utilisé.</p>
-  </div>
-</div>
-      <h1>Ajouter un Utilisateur</h1>
-      <form id="add-user-form" onsubmit="addUser(event)">
+      <h1>${formTitle}</h1>
+      <form id="add-user-form" onsubmit="saveUser(event)">
+		<input type="hidden" name="user_id" id="user_id" value="">
         <div class="form-group">
           <label for="username">Nom d'Utilisateur</label>
           <input type="text" class="form-control" id="username" name="username" required>
@@ -191,30 +210,114 @@
     closePopup('success-popup');
     closePopup('failure-popup');
   }
-
-  function addUser(e) {
+  // Modify function addUser to saveUser. This function to addNew user or update user.
+  function saveUser(e) {
     e.preventDefault();
     var username = document.getElementById('username').value;
     var email = document.getElementById('email').value;
     var password = document.getElementById('password').value;
     var dateTimeCreated = new Date().toLocaleString("fr-FR", { hour12: false });
+	var userId = document.getElementById('user_id').value;
 
+	if (userId) {
+		// Edit user
+		var emailExists = users.some(function(user, index) {
+		  return (user.email === email && userId != index);
+		});
+		
+		if (emailExists) {
+		  showFailureMessage('Erreur : L\'email est déjà utilisé.');
+		} else {
+		  users[userId] = {
+			...users[userId],
+			username,
+			email,
+			password,
+			dateTimeUpdated: dateTimeCreated,
+		  };
+		  showSuccessMessage('L\'utilisateur est mis à jour avec succès');
+		  storeUser('users', users);
+		  setTimeout(function () {
+			closePopup('success-popup');
+			showUserManagement();
+		  }, 1000);
+		}
+		
+	} else {
+		// Add new user
+		var emailExists = users.some(function (user) {
+		  return user.email === email;
+		});
 
-    var emailExists = users.some(function (user) {
-      return user.email === email;
-    });
-
-    if (emailExists) {
-      showPopup('failure-popup');
-    } else {
-      users.push({ username, email, password, dateTimeCreated });
-      showPopup('success-popup');
+		if (emailExists) {
+		  showFailureMessage('Erreur : L\'email est déjà utilisé.');
+		} else {
+		  users.push({ username, email, password, dateTimeCreated });
+		  showSuccessMessage('L\'utilisateur a été ajouté avec succès');
+		  storeUser('users', users);
+		  setTimeout(function () {
+			closePopup('success-popup');
+			showUserManagement();
+		  }, 1000);
+		}
+	}
+  }
+  
+  function editUser(index) {
+	showAddUserForm(true);
+	const user = users[index];
+	document.getElementById('username').value = user.username;
+	document.getElementById('email').value = user.email;
+	document.getElementById('password').value = user.password;
+	document.getElementById('user_id').value = index;
+  }
+  
+  function deleteUser(index) {
+    // use popup confirm of JS
+    var confirmation = confirm('Voulez-vous vraiment supprimer cet utilisateur?');
+  
+    // if click on OK
+    if (confirmation) {
+      // delete user
+      users.splice(index, 1);
+  
+      // popup confirm delete user success
+      showSuccessMessage('L\'utilisateur a été supprimé avec succès');
+  
+      // save user into Local Storage
+      storeUser('users', users);
+  
+      // attend 1 second to close popup
       setTimeout(function () {
         closePopup('success-popup');
         showUserManagement();
       }, 1000);
     }
   }
+  
+  function showSuccessMessage(message) {
+	document.getElementById('success-messsage').innerHTML = message;
+	showPopup('success-popup');
+  }
+  
+  function showFailureMessage(message) {
+	document.getElementById('failure-messsage').innerHTML = message;
+	showPopup('failure-popup');
+  }
+
+  function showConfirmMessage(message) {
+    document.getElementById('confirm-messsage').innerHTML = message;
+    showPopup('confirm-popup');
+
+  }
+
+  function storeUser(key, value) {
+	window.localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function storeTicket(key, value) {
+    window.localStorage.setItem(key, JSON.stringify(value));
+    }
 
   function showPopup(id) {
     var popup = document.getElementById(id);
@@ -344,10 +447,6 @@
     }, 0);
   }
 
-
-
-
-
   function renderChart(labels, data) {
     var ctx = document.getElementById('usersChart').getContext('2d');
     new Chart(ctx, {
@@ -386,6 +485,7 @@
                 <td>${ticket.title}</td>
                 <td>${ticket.description}</td>
                 <td>${ticket.status}</td>
+                <td><button class="btn btn-primary" onClick="editTicket(${index})">Éditer</button> <button class="btn btn-danger" onClick="deleteTicket(${index})">Supprimer</button></td>
               </tr>`;
     }).join('');
 
@@ -399,6 +499,7 @@
             <th>Titre</th>
             <th>Description</th>
             <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>${ticketsTable}</tbody>
@@ -406,19 +507,13 @@
     `;
   }
 
-  function showAddTicketForm() {
+  function showAddTicketForm(isUpdate = false) {
     var adminContent = document.querySelector('.admin-content');
+    var formTitle = isUpdate ? 'Update un Ticket' : 'Ajouter un Ticket';
     adminContent.innerHTML = `
-      <h1>Ajouter un Ticket</h1>
-      <!-- Popup de succès -->
-<div id="success-popup" class="popup">
-  <div class="popup-content">
-    <span class="close-btn" onclick="closePopup('success-popup')">&times;</span>
-    <p>Action réalisée avec succès!</p>
-  </div>
-</div>
-
-      <form id="add-ticket-form" onsubmit="addTicket(event)">
+      <h1>${formTitle}</h1>
+      <form id="add-ticket-form" onsubmit="saveTicket(event)">
+    <input type="hidden" name="ticket_id" id="ticket_id" value="">
         <div class="form-group">
           <label for="title">Titre</label>
           <input type="text" class="form-control" id="title" name="title" required>
@@ -427,6 +522,14 @@
           <label for="description">Description</label>
           <textarea class="form-control" id="description" name="description" required></textarea>
         </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select class="form-control" id="status" name="status" required style="width: 150px;">
+            <option value="Ouvert" selected>Ouvert</option>
+            <option value="Fermé">Fermé</option>
+            <option value="Annulé">Annulé</option>
+          </select>
+        </div>
         <button type="submit" class="btn btn-primary">Soumettre</button>
         <button type="button" class="btn btn-secondary" onclick="showSupport()">Annuler</button>
       </form>
@@ -434,19 +537,77 @@
     closePopup('success-popup');
   }
 
-  function addTicket(e) {
+  // Modify function addUser to saveUser. This function to addNew user or update user.
+  function saveTicket(e) {
     e.preventDefault();
     var title = document.getElementById('title').value;
     var description = document.getElementById('description').value;
+    var status = document.getElementById('status').value;
+    var dateTimeCreated = new Date().toLocaleString("fr-FR", { hour12: false });
+	  var ticketId = document.getElementById('ticket_id').value;
 
-    tickets.push({ title, description, status: 'Ouvert' });
-    showPopup('success-popup');
-    setTimeout(function () {
+    if (ticketId) {
+      //update ticket
+      tickets[ticketId] = {
+      ...tickets[ticketId],
+      title,
+      description,
+      status,
+      dateTimeUpdated: dateTimeCreated,
+      };
+      showSuccessMessage('Ticket est mis à jour avec succès');
+      storeTicket('tickets', tickets);
+      setTimeout(function () {
       closePopup('success-popup');
       showSupport();
-    }, 1000);
+      }, 1000);
+    } else {
+      // Add ticket
+      tickets.push({title, description, status});
+      showSuccessMessage('Action réalisée avec succès!');
+      storeTicket('tickets', tickets);
+      setTimeout(function () {
+      closePopup('success-popup');
+      showSupport();
+      }, 1000);
+    }
   }
+  
+  function editTicket(index) {
+    showAddTicketForm(true);
+    const ticket = tickets[index];
+    document.getElementById('title').value = ticket.title;
+    document.getElementById('description').value = ticket.description;
+    document.getElementById('status').value = ticket.status;
+    document.getElementById('ticket_id').value = index;
+    }
 
+  
+  function deleteTicket(index) {
+    // use popup confirm of JS
+    var confirmation = confirm('Voulez-vous vraiment supprimer ce ticket?');
+  
+    // if click on OK
+    if (confirmation) {
+      // delete ticket
+      tickets.splice(index, 1);
+  
+      // popup confirm delete ticket success
+      showSuccessMessage('Ticket a été supprimé avec succès');
+  
+      // save ticket into Local Storage
+      storeTicket('tickets', tickets);
+  
+      // attend 1 second to close popup
+      setTimeout(function () {
+        closePopup('success-popup');
+        showSupport();
+      }, 1000);
+    }
+  }
+  
+
+  
 </script>
 
 </html>

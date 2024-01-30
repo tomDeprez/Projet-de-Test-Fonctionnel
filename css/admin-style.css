@@ -76,7 +76,7 @@ h1 {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 1000;
-  display: flex;
+  /* display: flex; */
   justify-content: center;
   align-items: center;
 }
@@ -129,6 +129,11 @@ h1 {
 #failure-popup .popup-content {
   border: 3px solid #dc3545; /* Rouge pour échec */
 }
+
+#confirm-popup .popup-content {
+  border: 3px solid #858a85; /* Rouge pour échec */
+}
+
 .table {
   width: 100%;
   margin-top: 20px;

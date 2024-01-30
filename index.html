@@ -68,6 +68,19 @@
     closePopup('success-popup');
     closePopup('failure-popup');
   }
+  
+  function checkUser(username, password) {
+	// default user
+	if (username === 'admin' && password === '123456') return true;
+  
+	var storedUsers = JSON.parse(window.localStorage.getItem('users')) || [];
+	
+	var userExists = storedUsers.some(function(user) {
+		return user.username == username && user.password == password;
+	});
+	
+	return userExists;
+  }
 
   document.getElementById('login-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -75,10 +88,10 @@
     var username = document.getElementById('username').value;
     var password = document.getElementById('password').value;
 
-    if (username === 'admin' && password === '123456') {
+    if (checkUser(username, password)) {
       showPopup('success-popup');
       setTimeout(function () {
-        window.location.href = 'admin.html'; // Redirection après un délai
+        window.location.href = 'adminUpdated.html'; // Redirection après un délai
       }, 1000); // Délai de 1 seconde
     } else {
       showPopup('failure-popup');

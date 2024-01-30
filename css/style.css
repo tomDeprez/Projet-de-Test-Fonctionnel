@@ -113,6 +113,10 @@
   font-size: 1rem;
 }
 
+.popup button {
+  margin: 5px;
+}
+
 /* Styles spécifiques pour les popups de succès et d'échec */
 #success-popup .popup-content {
   border: 3px solid #28a745; /* Vert pour succès */
@@ -121,6 +125,11 @@
 #failure-popup .popup-content {
   border: 3px solid #dc3545; /* Rouge pour échec */
 }
+
+#confirm-popup .popup-content {
+  border: 3px solid #464343; /* gris pour confirm */
+}
+
 .settings {
   margin-top: 20px;
 }
